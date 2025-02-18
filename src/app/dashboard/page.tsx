@@ -49,20 +49,14 @@ export default function Dashboard() {
           return;
         }
 
-        const role = await getUserRole();
-        setIsAdmin(role === 'admin');
-
+        const userEmail = localStorage.getItem('userEmail');
         const response = await getTestRecords();
+        
         if (response.success) {
-          if (role === 'admin') {
-            setRecords(response.cruds);
-          } else {
-            const userEmail = localStorage.getItem('userEmail');
-            const userRecords = response.cruds.filter(
-              (record: TestRecord) => record.technicianName === userEmail
-            );
-            setRecords(userRecords);
-          }
+          const userRecords = response.cruds.filter(
+            (record: TestRecord) => record.technicianName === userEmail
+          );
+          setRecords(userRecords);
         }
       } catch (error) {
         console.error('Error:', error);

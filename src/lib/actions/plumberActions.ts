@@ -17,7 +17,7 @@ export async function createCrud(
 ) {
   try {
     await connectToDatabase();
-
+    
     const newRecord = new TestRecord({
       projectName,
       locationAddress,
@@ -95,10 +95,14 @@ export async function getTestRecords(): Promise<TestRecordType[]> {
   try {
     await connectToDatabase();
     
-    const records = await TestRecord.find().lean().select("-__v"); // Fetch records without __v
+    // Fetch all records from testrecords collection
+    const records = await TestRecord.find({})
+      .lean()
+      .select('-__v')
+      .exec();
 
-    return records.map((record) => ({
-      _id: String(record._id), // Ensure _id is always a string
+    return records.map(record => ({
+      _id: record._id.toString(),
       projectName: record.projectName,
       locationAddress: record.locationAddress,
       technicianName: record.technicianName,
@@ -107,10 +111,11 @@ export async function getTestRecords(): Promise<TestRecordType[]> {
       date: record.date,
       time: record.time,
       readingPressure: record.readingPressure,
-      image: record.image,
+      image: record.image
     }));
+
   } catch (error) {
-    console.error("Error fetching test records:", error);
+    console.error('Error fetching test records:', error);
     return [];
   }
 }
@@ -179,15 +184,11 @@ export async function getRecordsByType(recordType: 'start' | 'end') {
     }
 }
 
-export async function getRecordsByProjectName(recordType: 'start' | 'end', projectName?: string) {
+export async function getRecordsByProjectName(recordType: 'start' | 'end') {
   try {
     await connectToDatabase();
     
-    const query = projectName 
-      ? { recordType, projectName }
-      : { recordType };
-    
-    const records = await TestRecord.find(query)
+    const records = await TestRecord.find({ recordType })
       .sort({ date: -1, time: -1 })
       .lean()
       .exec();

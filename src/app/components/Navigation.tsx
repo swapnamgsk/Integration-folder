@@ -33,6 +33,16 @@ export default function Navigation() {
     e.preventDefault();
     const isAuth = localStorage.getItem('isAuthenticated') === 'true';
     if (isAuth) {
+      router.push('/records');
+    } else {
+      router.push('/signup');
+    }
+  };
+
+  const handleNewProjectClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+    if (isAuth) {
       router.push('/dashboard');
     } else {
       router.push('/signup');
@@ -64,6 +74,12 @@ export default function Navigation() {
             {isLoggedIn ? (
               <>
                 <span className="text-gray-300">Welcome, {username}</span>
+                <button
+                  onClick={handleNewProjectClick}
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  New Project
+                </button>
                 <button
                   onClick={handleDashboardClick}
                   className="text-gray-300 hover:text-white transition-colors"

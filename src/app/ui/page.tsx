@@ -36,14 +36,15 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
   useEffect(() => {
     const fetchProjects = async () => {
       try {
+        const userEmail = localStorage.getItem('userEmail');
         const startReadings = await getRecordsByProjectName('start');
         const endReadings = await getRecordsByProjectName('end');
 
         if (startReadings.success && endReadings.success) {
           const endReadingProjects = new Set(endReadings.cruds.map((crud: any) => crud.projectName));
-          const projectsNeedingEnd = startReadings.cruds.filter(
-            (crud: any) => !endReadingProjects.has(crud.projectName)
-          );
+          const projectsNeedingEnd = startReadings.cruds
+            .filter((crud: any) => !endReadingProjects.has(crud.projectName))
+            .filter((crud: any) => crud.technicianName === userEmail); // Filter for current user's projects
 
           setProjectsWithStartOnly(projectsNeedingEnd);
 
@@ -87,13 +88,19 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
     reader.onload = async () => {
       const imageData = reader.result as string;
       const currentTime = format(new Date(), 'HH:mm');
+      const userEmail = localStorage.getItem('userEmail');
+
+      if (!userEmail) {
+        setMessage('❌ User not properly authenticated. Please log in again.');
+        return;
+      }
 
       const result = await createCrud(
         formData.projectName,
         formData.locationAddress,
-        formData.technicianName,
+        userEmail,
         formData.floorName,
-        projectsWithStartOnly.length === 0 ? 'start' : 'end', // Determine record type based on existing projects
+        projectsWithStartOnly.length === 0 ? 'start' : 'end',
         formData.date,
         currentTime,
         Number(formData.readingPressure),
@@ -115,7 +122,7 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
 
   const renderStartReadingForm = () => (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg shadow">
-      <h2 className="text-xl font-bold mb-4">Start New Project Reading</h2>
+      <h2 className="text-xl font-bold mb-4">Record Start Reading</h2>
       
       <input
         type="text"
@@ -131,15 +138,6 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
         placeholder="Location Address"
         value={formData.locationAddress}
         onChange={(e) => setFormData({ ...formData, locationAddress: e.target.value })}
-        className="w-full p-2 border rounded"
-        required
-      />
-
-      <input
-        type="text"
-        placeholder="Technician Name"
-        value={formData.technicianName}
-        onChange={(e) => setFormData({ ...formData, technicianName: e.target.value })}
         className="w-full p-2 border rounded"
         required
       />
@@ -186,12 +184,6 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
       >
         Submit Start Reading
       </button>
-
-      {message && (
-        <p className={`text-center ${message.includes('✅') ? 'text-green-600' : 'text-red-600'}`}>
-          {message}
-        </p>
-      )}
     </form>
   );
 
@@ -199,42 +191,12 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
     <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg shadow">
       <h2 className="text-xl font-bold mb-4">Record End Reading</h2>
 
-      {projectsWithStartOnly.length > 1 ? (
-        <select
-          value={formData.projectName}
-          onChange={(e) => {
-            const selectedProject = projectsWithStartOnly.find(
-              p => p.projectName === e.target.value
-            );
-            if (selectedProject) {
-              setFormData({
-                ...formData,
-                projectName: selectedProject.projectName,
-                locationAddress: selectedProject.locationAddress,
-                technicianName: selectedProject.technicianName,
-                floorName: selectedProject.floorName,
-              });
-            }
-          }}
-          className="w-full p-2 border rounded"
-          required
-        >
-          <option value="">Select Project</option>
-          {projectsWithStartOnly.map((project) => (
-            <option key={project.projectName} value={project.projectName}>
-              {project.projectName}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <div className="bg-gray-100 p-4 rounded mb-4">
-          <h3 className="font-semibold">Project Details:</h3>
-          <p>Project: {formData.projectName}</p>
-          <p>Location: {formData.locationAddress}</p>
-          <p>Technician: {formData.technicianName}</p>
-          <p>Floor: {formData.floorName}</p>
-        </div>
-      )}
+      <div className="bg-gray-100 p-4 rounded mb-4">
+        <h3 className="font-semibold">Project Details:</h3>
+        <p>Project: {formData.projectName}</p>
+        <p>Location: {formData.locationAddress}</p>
+        <p>Floor: {formData.floorName}</p>
+      </div>
 
       <input
         type="number"
@@ -269,12 +231,6 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
       >
         Submit End Reading
       </button>
-
-      {message && (
-        <p className={`text-center ${message.includes('✅') ? 'text-green-600' : 'text-red-600'}`}>
-          {message}
-        </p>
-      )}
     </form>
   );
 

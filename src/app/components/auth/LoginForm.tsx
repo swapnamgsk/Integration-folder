@@ -39,7 +39,7 @@ export default function LoginForm() {
       const response = await loginUser(credentials);
       
       if (response.success) {
-        // Store auth data
+        // Store auth data including email
         localStorage.setItem('token', response.token);
         localStorage.setItem('userEmail', credentials.email);
         localStorage.setItem('userRole', response.user.role);
@@ -48,8 +48,8 @@ export default function LoginForm() {
         
         toast.success('Login successful!');
         
-        // Redirect to landing page instead of dashboard
-        window.location.href = '/';
+        // Redirect to dashboard instead of landing page
+        router.push('/dashboard');
       } else {
         setError(response.message || 'Login failed');
         toast.error(response.message || 'Login failed');
