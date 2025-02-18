@@ -37,6 +37,17 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
     const fetchProjects = async () => {
       try {
         const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail) {
+          setMessage('❌ User not properly authenticated. Please log in again.');
+          return;
+        }
+
+        // Set the technician name (email) in the form data
+        setFormData(prevData => ({
+          ...prevData,
+          technicianName: userEmail
+        }));
+
         const startReadings = await getRecordsByProjectName('start');
         const endReadings = await getRecordsByProjectName('end');
 
@@ -124,6 +135,12 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
     <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg shadow">
       <h2 className="text-xl font-bold mb-4">Record Start Reading</h2>
       
+      <div className="bg-gray-100 p-3 rounded mb-2">
+        <p className="text-gray-700">
+          <span className="font-semibold">Technician:</span> {formData.technicianName}
+        </p>
+      </div>
+      
       <input
         type="text"
         placeholder="Project Name"
@@ -196,6 +213,7 @@ export default function PostingForm({ onRecordCreated }: { onRecordCreated: () =
         <p>Project: {formData.projectName}</p>
         <p>Location: {formData.locationAddress}</p>
         <p>Floor: {formData.floorName}</p>
+        <p>Technician: {formData.technicianName}</p>
       </div>
 
       <input

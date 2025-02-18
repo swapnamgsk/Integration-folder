@@ -7,14 +7,18 @@ export default function Navigation() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Check authentication status whenever component mounts or localStorage changes
     const checkAuth = () => {
       const isAuth = localStorage.getItem('isAuthenticated') === 'true';
       const storedUsername = localStorage.getItem('username');
+      const userRole = localStorage.getItem('userRole');
+      
       setIsLoggedIn(isAuth);
       setUsername(storedUsername || '');
+      setIsAdmin(userRole === 'admin');
     };
 
     checkAuth();
@@ -74,12 +78,14 @@ export default function Navigation() {
             {isLoggedIn ? (
               <>
                 <span className="text-gray-300">Welcome, {username}</span>
-                <button
-                  onClick={handleNewProjectClick}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  New Project
-                </button>
+                {!isAdmin && (
+                  <button
+                    onClick={handleNewProjectClick}
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    New Project
+                  </button>
+                )}
                 <button
                   onClick={handleDashboardClick}
                   className="text-gray-300 hover:text-white transition-colors"
