@@ -1,6 +1,6 @@
 "use client";
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5001/api';
 
 interface AuthResponse {
   success: boolean;
@@ -14,36 +14,33 @@ interface AuthResponse {
   message?: string;
 }
 
-export async function loginUser(credentials: { email: string; password: string }): Promise<AuthResponse> {
+export async function loginUser(credentials: { email: string; password: string }) {
   try {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(credentials),
-      credentials: 'include', // This is important for cookies
     });
 
-    const data = await response.json();
-
-    if (response.ok) {
-      // Store token in sessionStorage for subsequent requests
-      if (data.token) {
-        sessionStorage.setItem('token', data.token);
-      }
-      return data;
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Login failed'
-      };
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Login failed');
     }
-  } catch (error) {
+
+    const data = await response.json();
+    return {
+      success: true,
+      user: data.user,
+      token: data.token
+    };
+  } catch (error: any) {
     console.error('Login error:', error);
     return {
       success: false,
-      message: 'Authentication failed'
+      message: error.message || 'An error occurred during login'
     };
   }
 }
@@ -100,37 +97,31 @@ export function logout(): void {
   }
 }
 
-export async function registerUser(userData: { 
+export async function registerUser(userData: {
   username: string;
-  email: string; 
-  password: string; 
-}): Promise<AuthResponse> {
+  email: string;
+  password: string;
+  role?: string;
+}) {
   try {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
       body: JSON.stringify(userData),
-      cache: 'no-store',
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.message || 'Registration failed');
+      const error = await response.json();
+      throw new Error(error.message || 'Registration failed');
     }
 
-    // Store token in localStorage or cookies if needed
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    }
-
+    const data = await response.json();
     return {
       success: true,
-      ...data
+      message: 'Registration successful',
+      user: data.user
     };
   } catch (error: any) {
     console.error('Registration error:', error);

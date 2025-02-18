@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import './styles/signup.css';
 import Link from 'next/link';
+import { toast } from 'react-toastify';
+import { registerUser } from '@/lib/actions/authApi';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -28,28 +30,19 @@ export default function SignupForm() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store token and user data
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // Redirect based on role
-        router.push(data.redirectUrl);
+      const response = await registerUser(formData);
+      
+      if (response.success) {
+        toast.success('Registration successful! Please login.');
+        router.push('/login');
       } else {
-        setError(data.message);
+        setError(response.message);
+        toast.error(response.message);
       }
     } catch (error) {
-      setError('An error occurred during registration');
+      const errorMessage = 'An error occurred during registration';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

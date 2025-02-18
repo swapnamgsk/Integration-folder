@@ -3,13 +3,30 @@
 import { useState, useEffect } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
-import Navigation from './components/Navigation'
+import { useRouter } from 'next/navigation';
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const authStatus = localStorage.getItem('isAuthenticated') === 'true';
+    setIsAuthenticated(authStatus);
+
+    // If not authenticated, redirect to signup
+    if (!authStatus) {
+      router.push('/signup');
+    }
+  }, [router]);
+
+  // If not authenticated, don't render the page content
+  if (!isAuthenticated) {
+    return null; // or a loading spinner
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#08040e] to-[#1a1033]">
-      <Navigation />
-
       {/* Hero Section */}
       <div className="relative pt-32 pb-32 flex content-center items-center justify-center min-h-screen">
         <div className="container mx-auto px-4">

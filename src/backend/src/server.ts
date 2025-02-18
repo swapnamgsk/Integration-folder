@@ -20,14 +20,14 @@ connectDB()
 
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: 'http://localhost:3000', // Your frontend URL
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -74,29 +74,33 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`
-🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}
-👉 http://localhost:${PORT}
-  `);
-});
+// Port configuration with fallback
+const PORT = process.env.PORT || 5001;
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err: Error) => {
-  console.log('❌ UNHANDLED REJECTION! Shutting down...');
-  console.error(err.name, err.message);
-  server.close(() => {
-    process.exit(1);
-  });
+// Start server with error handling
+const server = app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  connectDB()
+    .then(() => console.log('✅ Database connected successfully'))
+    .catch((err) => console.error('❌ Database connection error:', err));
+}).on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`❌ Port ${PORT} is already in use. Trying port ${PORT + 1}`);
+    app.listen(PORT + 1, () => {
+      console.log(`✅ Server running on port ${PORT + 1}`);
+    });
+  } else {
+    console.error('❌ Server error:', err);
+  }
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err: Error) => {
   console.log('❌ UNCAUGHT EXCEPTION! Shutting down...');
   console.error(err.name, err.message);
-  process.exit(1);
+  server.close(() => {
+    process.exit(1);
+  });
 });
 
 // Graceful shutdown
