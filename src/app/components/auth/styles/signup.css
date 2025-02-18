@@ -1,0 +1,101 @@
+/* Signup Form Specific Styles */
+.signup-container {
+  @apply flex justify-center items-center min-h-screen bg-[#08040e] font-poppins p-4;
+}
+
+.signup-form-container {
+  @apply relative w-[800px] h-[450px] bg-[#0f0a1b] rounded-lg overflow-hidden;
+  box-shadow: 0 0 20px rgba(116, 41, 236, 0.3);
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Welcome Section - Exact gradient match */
+.signup-welcome {
+  @apply absolute left-0 top-0 w-[50%] h-full flex flex-col justify-center px-16;
+  background: #7c3aed; /* Solid purple color */
+  clip-path: polygon(0 0, 100% 0, 65% 100%, 0 100%);
+}
+
+/* Form Section */
+.signup-form-section {
+  @apply absolute right-0 top-0 w-[45%] h-full flex flex-col justify-center px-12;
+  margin-left: auto;
+}
+
+/* Input Styles */
+.signup-input-wrapper {
+  @apply relative;
+}
+
+.signup-input {
+  @apply w-full bg-transparent border-b border-gray-600 text-white pb-3 focus:outline-none;
+  transition: all 0.3s ease;
+}
+
+.signup-input::placeholder {
+  @apply text-gray-400;
+}
+
+.signup-icon {
+  @apply absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm;
+}
+
+/* Button Styles - Exact gradient match */
+.signup-button {
+  @apply mt-8 py-3 rounded-full text-white font-medium;
+  background: linear-gradient(to right, #4f46e5, #2563eb); /* Updated to match exact blue gradient */
+  transition: all 0.3s ease;
+}
+
+.signup-button:hover {
+  @apply opacity-90;
+  transform: translateY(-1px);
+}
+
+/* Link Styles */
+.signup-link {
+  @apply text-[#7c3aed] text-sm text-center mt-4 hover:text-[#6d28d9] transition-colors;
+}
+
+/* Glow Animation */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.6);
+  }
+}
+
+/* Input Focus Effects */
+.signup-input:focus {
+  @apply border-[#7c3aed];
+}
+
+.signup-input:focus + .signup-icon {
+  @apply text-[#7c3aed];
+}
+
+/* Text colors for labels */
+.signup-form-section h2 {
+  @apply text-white text-3xl font-semibold mb-8;
+}
+
+.signup-input-wrapper label {
+  @apply text-gray-400;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .signup-form-container {
+    @apply w-full max-w-[400px] h-auto;
+  }
+
+  .signup-welcome {
+    @apply hidden;
+  }
+
+  .signup-form-section {
+    @apply relative w-full px-6 py-12;
+  }
+}
