@@ -1,0 +1,109 @@
+/* Login Form Specific Styles */
+.login-container {
+    @apply flex justify-center items-center h-screen bg-[#08040e] font-poppins;
+  }
+  
+  .login-form-container {
+    @apply flex relative h-[444px] border-2 border-[#7429ec] animate-glow-login;
+  }
+  
+  .login-form {
+    @apply text-center px-4 py-16;
+  }
+  
+  .login-input-container {
+    @apply relative mb-6;
+  }
+  
+  .login-input {
+    @apply w-full bg-transparent border-b border-white text-white pb-2 pt-1 px-0 focus:outline-none placeholder:text-transparent;
+  }
+  
+  .login-label {
+    @apply absolute left-0 top-2 text-white text-sm transition-all duration-300 -translate-y-6 text-xs;
+  }
+  
+  .login-button {
+    @apply w-full bg-gradient-to-r from-[#541eab] via-[#26a0da] to-[#541eab] text-white py-3 rounded-full transition-all duration-500 bg-[length:200%_auto] hover:bg-[position:100%] mb-4;
+  }
+  
+  .login-link {
+    @apply text-[#6324c9] text-xs hover:text-[#7a32e6] hover:underline transition-all duration-500;
+  }
+  
+  .login-welcome {
+    @apply login-move login flex flex-col justify-center relative bg-gradient-to-r from-[rgba(29,11,57,1)] via-[rgba(61,22,122,1)] to-[rgba(97,34,198,1)];
+  }
+  
+  @keyframes glow-login {
+    0%, 100% {
+      box-shadow: 0px 0px 10px 1px #7429ec;
+    }
+    50% {
+      box-shadow: 0px 0px 20px 5px #7429ec;
+    }
+  }
+  
+  @keyframes slideInReverse {
+    0% {
+      transform: translateX(-16rem);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .animate-glow-login {
+    animation: glow-login 5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .login-move {
+    animation: slideInReverse 1s ease-in-out;
+  }
+  
+  .login {
+    align-items: flex-end;
+    padding: 0 2rem 0 11rem;
+    text-align: right;
+    clip-path: polygon(0% 0, 100% 0, 100% 100%, 60% 100%);
+  }
+  
+  .login::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 32rem;
+    background: linear-gradient(to bottom, #3a196a, #6e27df);
+    transform: rotate(-30deg);
+    transform-origin: top left;
+    clip-path: polygon(0% 0, 100% 0, 100% 100%, 0% 100%);
+    z-index: 2;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: white;
+    color: black; /* Ensure text is visible */
+    margin-top: 4px;
+  }
+  
+  .form-input::placeholder {
+    color: #999;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #666;
+  }
