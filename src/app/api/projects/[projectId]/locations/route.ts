@@ -1,84 +1,53 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Location from "@/models/Location";
+import mongoose from "mongoose"; // Import mongoose for ObjectId conversion
 
-export async function POST(req: NextRequest, { params }: { params: { projectId: string } }) {
+// **GET**: Fetch all locations for a project
+export async function GET(request: Request, { params }: { params: { projectId: string } }) {
   try {
-    console.log("📌 API called - Creating location...");
-    
-    const { name } = await req.json();
-    console.log("📌 Received data:", { name });
-
-    if (!name) {
-      console.error("❌ Missing name in request body");
-      return NextResponse.json({ error: "Location name is required" }, { status: 400 });
-    }
-
     await connectToDatabase();
-    console.log("📌 Connected to MongoDB");
 
-    // Ensure projectId is passed correctly
-    const { projectId } = params; // Extract params correctly
-    console.log("📌 Extracted projectId:", projectId);
+    const mainProjectId = params.projectId;
+    console.log("📌 Fetching locations for project:", mainProjectId);
 
-    if (!projectId) {
-      console.error("❌ Missing projectId in URL params");
+    if (!mainProjectId) {
       return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
     }
 
-    const newLocation = await Location.create({
-      name,
-      mainProjectId: projectId, // Ensure this matches your schema field
-    });
+    // Ensure mainProjectId is treated as an ObjectId
+    const locations = await Location.find({ mainProjectId: new mongoose.Types.ObjectId(mainProjectId) });
 
-    console.log("✅ Location created successfully:", newLocation);
-    return NextResponse.json(newLocation, { status: 201 });
+    return NextResponse.json(locations, { status: 200 });
   } catch (error) {
-    console.error("❌ Error creating location:", error);
+    console.error("❌ Error fetching locations:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-
-import mongoose from "mongoose";
-
-
-export async function GET(
-  request: Request,
-  context: { params: { projectId?: string } } // Ensure projectId is optional
-) {
-  console.log("📌 API Request Received");
-
-  const { projectId } = context.params || {}; // Ensure params exist
-  console.log("📌 Received projectId:", projectId);
-
+// **POST**: Create a new location under a project
+export async function POST(request: Request, { params }: { params: { projectId: string } }) {
   try {
-    console.log("📌 Connecting to MongoDB...");
     await connectToDatabase();
-    console.log("✅ Successfully connected to MongoDB");
 
-    // Validate projectId
-    if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
-      console.error("❌ Invalid projectId:", projectId);
-      return NextResponse.json({ error: "Invalid projectId" }, { status: 400 });
+    const mainProjectId = params.projectId;
+    console.log("📌 Creating location under project:", mainProjectId);
+
+    if (!mainProjectId) {
+      return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
     }
 
-    console.log("📌 Querying database for locations...");
-    const locations = await Location.find({
-      mainProjectId: new mongoose.Types.ObjectId(projectId), // 🔥 Use mainProjectId
-    });
-
-    console.log("✅ Query successful, Locations fetched:", locations);
-    return NextResponse.json(locations, { status: 200 });
-
-  } catch (error: unknown) {
-    console.error("❌ Error fetching locations:", error);
-
-    let errorMessage = "Failed to fetch locations";
-    if (error instanceof Error) {
-      errorMessage = error.message;
+    const { name } = await request.json();
+    if (!name) {
+      return NextResponse.json({ error: "Location name is required" }, { status: 400 });
     }
 
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    // Ensure `mainProjectId` is stored as an ObjectId
+    const newLocation = await Location.create({ name, mainProjectId: new mongoose.Types.ObjectId(mainProjectId) });
+
+    return NextResponse.json(newLocation, { status: 201 });
+  } catch (error) {
+    console.error("❌ Error creating location:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

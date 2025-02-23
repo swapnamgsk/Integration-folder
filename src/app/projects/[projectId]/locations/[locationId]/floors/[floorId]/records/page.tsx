@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import RecordsList from "@/app/components/CreateRecordModal";
 
 export default function RecordsPage() {
   const params = useParams();
   const { projectId, locationId, floorId } = params as { projectId: string; locationId: string; floorId: string };
 
   const [projects, setProjects] = useState<any[]>([]);
+
+ const router = useRouter();
   const [locations, setLocations] = useState<any[]>([]);
   const [floors, setFloors] = useState<any[]>([]);
   const [records, setRecords] = useState<any[]>([]);
@@ -63,6 +67,8 @@ export default function RecordsPage() {
     if (res.ok) {
       const newRecord = await res.json();
       setRecords([...records, newRecord.record]);
+      router.push("/components/records"); // Redirect after form submission
+
     } else {
       alert("Failed to create record");
     }
@@ -70,6 +76,7 @@ export default function RecordsPage() {
 
   return (
     <div className="p-6">
+      <RecordsList />
       <h1 className="text-xl font-bold">📋 Floor Records</h1>
 
       {/* Project Dropdown */}
@@ -106,5 +113,10 @@ export default function RecordsPage() {
       <input type="file" onChange={(e) => setImage(e.target.files?.[0] || null)} />
       <button onClick={createRecord}>Add Record</button>
     </div>
+    
   );
+  
 }
+
+
+

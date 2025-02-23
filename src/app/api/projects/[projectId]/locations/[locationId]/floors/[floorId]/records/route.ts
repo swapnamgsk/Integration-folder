@@ -1,84 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
-import Record from "@/models/Record"; // Ensure you have this model
+import Project from "@/models/MainProject";
+import Location from "@/models/Location";
+import Floor from "@/models/Floor";
+import Record from "@/models/Record";
 
-// ✅ Fetch Records for a Floor
-export async function GET(
-  req: Request,
-  { params }: { params: { projectId: string; locationId: string; floorId: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: { projectId: string; locationId: string; floorId: string } }) {
   await connectToDatabase();
 
-  try {
-    const records = await Record.find({
-      projectId: params.projectId,
-      locationId: params.locationId,
-      floorId: params.floorId,
-    });
+  console.log("Fetching records for:", params);
 
-    return NextResponse.json(records, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ message: "Failed to fetch records" }, { status: 500 });
+  // Fetch project, location, and floor details
+  const project = await Project.findById(params.projectId);
+  const location = await Location.findById(params.locationId);
+  const floor = await Floor.findById(params.floorId);
+
+  // Fetch records for the floor
+  const records = await Record.find({ floorId: params.floorId });
+
+  if (!records || records.length === 0) {
+    return NextResponse.json({ error: "No records found" }, { status: 404 });
   }
+
+  // Enhance records with project, location, and floor names
+  const enhancedRecords = records.map((record) => ({
+    ...record.toObject(),
+    projectName: project?.name || "Unknown Project",
+    locationName: location?.name || "Unknown Location",
+    floorName: floor?.name || "Unknown Floor",
+    formattedDate: new Date(record.dateTime).toLocaleString(), // Format Date & Time
+    imageUrl: record.imageUrl || "/default-image.jpg", // Fallback Image
+  }));
+
+  return NextResponse.json(enhancedRecords);
 }
 
-// import { writeFile } from "fs/promises";
-// import path from "path";
-// import { mkdir } from "fs/promises";
 
-
-
-// export async function POST(req: Request, params: { projectId: string; locationId: string; floorId: string }) {
-//   try {
-//     const formData = await req.formData();
-
-//     // Extract and validate required fields
-//     const plumberName = formData.get("plumberName") as string;
-//     const pressure = formData.get("pressure") as string;
-//     const recordType = formData.get("recordType") as string;
-//     const dateTime = formData.get("dateTime") as string;
-//     const image = formData.get("image") as File | null;
-
-//     if (!plumberName || !pressure || !recordType || !dateTime) {
-//       return NextResponse.json(
-//         { error: "Missing required fields: plumberName, pressure, recordType, or dateTime" },
-//         { status: 400 }
-//       );
-//     }
-
-//     // Ensure directory exists
-//     const uploadsDir = path.join(process.cwd(), "public/uploads");
-//     await mkdir(uploadsDir, { recursive: true });
-
-//     // Save the file if an image is provided
-//     let imageUrl = null;
-//     if (image) {
-//       const imageBuffer = await image.arrayBuffer();
-//       const imageName = `${Date.now()}_${image.name}`;
-//       const imagePath = path.join(uploadsDir, imageName);
-//       await writeFile(imagePath, Buffer.from(imageBuffer));
-//       imageUrl = `/uploads/${imageName}`;
-//     }
-
-//     // Create the record in MongoDB
-//     const newRecord = await Record.create({
-//       projectId: params.projectId,
-//       locationId: params.locationId,
-//       floorId: params.floorId,
-//       plumberName,
-//       pressure,
-//       recordType,
-//       dateTime,
-//       imageUrl,
-//     });
-
-//     return NextResponse.json({ record: newRecord }, { status: 201 });
-
-//   } catch (error) {
-//     console.error("Error saving file:", error);
-//     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-//   }
-// }
 
 
 
