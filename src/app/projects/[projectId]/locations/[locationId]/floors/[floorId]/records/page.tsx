@@ -1,65 +1,67 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import RecordsList from "@/app/components/CreateRecordModal";
 
 export default function RecordsPage() {
   const params = useParams();
   const { projectId, locationId, floorId } = params as { projectId: string; locationId: string; floorId: string };
 
-  const [projects, setProjects] = useState<any[]>([]);
-
- const router = useRouter();
-  const [locations, setLocations] = useState<any[]>([]);
-  const [floors, setFloors] = useState<any[]>([]);
+  const router = useRouter();
   const [records, setRecords] = useState<any[]>([]);
-  const [selectedProject, setSelectedProject] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedFloor, setSelectedFloor] = useState("");
-
-  const [recordType, setRecordType] = useState("Start");
-  const [pressure, setPressure] = useState<number>(0);
   const [plumberName, setPlumberName] = useState("");
+  const [pressure, setPressure] = useState<number>(0);
   const [image, setImage] = useState<File | null>(null);
 
+  // ✅ Automatically create "Start" record when the page loads
   useEffect(() => {
-    async function fetchProjects() {
-      const res = await fetch("/api/projects");
-      setProjects(await res.json());
-    }
-    fetchProjects();
-  }, []);
+    async function createStartRecord() {
+      if (!projectId || !locationId || !floorId) return;
 
+      const res = await fetch(`/api/projects/${projectId}/locations/${locationId}/floors/${floorId}/records`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recordType: "Start" }),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to create Start record");
+      }
+    }
+
+    createStartRecord();
+  }, [projectId, locationId, floorId]);
+
+  // ✅ Fetch and display only "End" records
   useEffect(() => {
-    async function fetchLocations() {
-      if (!selectedProject) return;
-      const res = await fetch(`/api/projects/${selectedProject}/locations`);
-      setLocations(await res.json());
-    }
-    fetchLocations();
-  }, [selectedProject]);
+    async function fetchEndRecords() {
+      if (!projectId || !locationId || !floorId) return;
 
-  useEffect(() => {
-    async function fetchFloors() {
-      if (!selectedLocation) return;
-      const res = await fetch(`/api/projects/${selectedProject}/locations/${selectedLocation}/floors`);
-      setFloors(await res.json());
+      const res = await fetch(`/api/projects/${projectId}/locations/${locationId}/floors/${floorId}/records`);
+      if (res.ok) {
+        const data = await res.json();
+        const endRecords = data.filter((record: any) => record.recordType === "End");
+        setRecords(endRecords);
+      } else {
+        console.error("Failed to fetch records");
+      }
     }
-    fetchFloors();
-  }, [selectedLocation]);
 
-  async function createRecord() {
-    if (!recordType || !plumberName || !image) return alert("Enter all details!");
+    fetchEndRecords();
+  }, [projectId, locationId, floorId]);
+
+  // ✅ Create "End" record
+  async function createEndRecord() {
+    if (!plumberName || !image) return alert("Enter all details!");
 
     const formData = new FormData();
-    formData.append("recordType", recordType);
+    formData.append("recordType", "End");
     formData.append("pressure", pressure.toString());
     formData.append("plumberName", plumberName);
     formData.append("image", image);
 
-    const res = await fetch(`/api/projects/${selectedProject}/locations/${selectedLocation}/floors/${selectedFloor}/records`, {
+    const res = await fetch(`/api/projects/${projectId}/locations/${locationId}/floors/${floorId}/records`, {
       method: "POST",
       body: formData,
     });
@@ -67,10 +69,8 @@ export default function RecordsPage() {
     if (res.ok) {
       const newRecord = await res.json();
       setRecords([...records, newRecord.record]);
-      router.push("/components/records"); // Redirect after form submission
-
     } else {
-      alert("Failed to create record");
+      alert("Failed to create End record");
     }
   }
 
@@ -79,44 +79,18 @@ export default function RecordsPage() {
       <RecordsList />
       <h1 className="text-xl font-bold">📋 Floor Records</h1>
 
-      {/* Project Dropdown */}
-      <select onChange={(e) => setSelectedProject(e.target.value)}>
-        <option value="">Select Project</option>
-        {projects.map((p) => (
-          <option key={p._id} value={p._id}>{p.name}</option>
-        ))}
-      </select>
-
-      {/* Location Dropdown */}
-      <select onChange={(e) => setSelectedLocation(e.target.value)}>
-        <option value="">Select Location</option>
-        {locations.map((l) => (
-          <option key={l._id} value={l._id}>{l.name}</option>
-        ))}
-      </select>
-
-      {/* Floor Dropdown */}
-      <select onChange={(e) => setSelectedFloor(e.target.value)}>
-        <option value="">Select Floor</option>
-        {floors.map((f) => (
-          <option key={f._id} value={f._id}>{f.name}</option>
-        ))}
-      </select>
-
-      {/* Form Fields */}
+      {/* Form Fields for "End" Record */}
       <input type="text" value={plumberName} onChange={(e) => setPlumberName(e.target.value)} placeholder="Plumber Name" />
-      <select onChange={(e) => setRecordType(e.target.value)}>
-        <option value="Start">Start</option>
-        <option value="End">End</option>
-      </select>
       <input type="number" value={pressure} onChange={(e) => setPressure(Number(e.target.value))} placeholder="Pressure" />
       <input type="file" onChange={(e) => setImage(e.target.files?.[0] || null)} />
-      <button onClick={createRecord}>Add Record</button>
+      <button onClick={createEndRecord}>Add End Record</button>
+
+      {/* Display End Records */}
+      <ul className="mt-4">
+        {records.map((record) => (
+          <li key={record._id} className="p-2 border-b">{record.plumberName} - {record.pressure} PSI</li>
+        ))}
+      </ul>
     </div>
-    
   );
-  
 }
-
-
-

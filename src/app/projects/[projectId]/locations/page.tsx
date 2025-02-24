@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { use } from "react"; // Import use() for unwrapping params
 
 // Define Type for Locations
 type LocationType = {
@@ -8,8 +9,8 @@ type LocationType = {
   name: string;
 };
 
-const LocationsPage = ({ params }: { params: { projectId: string } }) => {
-  const { projectId } = params;
+const LocationsPage = ({ params }: { params: Promise<{ projectId: string }> }) => {
+  const { projectId } = use(params); // Unwrap params correctly
   const router = useRouter();
   const [locations, setLocations] = useState<LocationType[]>([]);
   const [newLocation, setNewLocation] = useState("");

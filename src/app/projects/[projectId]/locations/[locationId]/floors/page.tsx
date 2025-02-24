@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 interface Floor {
   _id: string;
@@ -10,6 +10,7 @@ interface Floor {
 
 export default function FloorsPage() {
   const params = useParams(); // ✅ Unwrap params
+  const router = useRouter(); // ✅ Initialize router
   const { projectId, locationId } = params as { projectId: string; locationId: string };
 
   const [floors, setFloors] = useState<Floor[]>([]);
@@ -51,6 +52,11 @@ export default function FloorsPage() {
     }
   }
 
+  // ✅ Handle Floor Click -> Redirect to Records Page
+  function handleFloorClick(floorId: string) {
+    router.push(`/projects/${projectId}/locations/${locationId}/floors/${floorId}/records`);
+  }
+
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold">🏢 Manage Floors</h1>
@@ -58,7 +64,13 @@ export default function FloorsPage() {
       {/* Floor List */}
       <ul className="mt-4">
         {floors.map((floor) => (
-          <li key={floor._id} className="p-2 border-b">{floor.name}</li>
+          <li 
+            key={floor._id} 
+            className="p-2 border-b cursor-pointer hover:bg-gray-200"
+            onClick={() => handleFloorClick(floor._id)} // ✅ Redirect on click
+          >
+            {floor.name}
+          </li>
         ))}
       </ul>
 
