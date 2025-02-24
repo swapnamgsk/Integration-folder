@@ -39,15 +39,16 @@ export default function LoginForm() {
       
       if (response.success) {
         localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('userRole', response.user.role);
+        localStorage.setItem('username', response.user.username);
         localStorage.setItem('isAuthenticated', 'true');
         
         toast.success('Login successful!');
         
         if (response.user.role === 'admin') {
-          router.push('/admin/dashboard');
+          router.push('/');
         } else {
-          router.push('/dashboard');
+          router.push('/');
         }
       } else {
         setError(response.message || 'Login failed');

@@ -14,9 +14,11 @@ export default function Navigation() {
     const checkAuth = () => {
       const isAuth = localStorage.getItem('isAuthenticated') === 'true';
       const userRole = localStorage.getItem('userRole');
+      const userName = localStorage.getItem('username');
       
       setIsLoggedIn(isAuth);
       setIsAdmin(userRole === 'admin');
+      setUsername(userName || '');
     };
 
     checkAuth();
@@ -38,6 +40,11 @@ export default function Navigation() {
     } else {
       router.push('/dashboard');
     }
+  };
+
+  const handleRecordsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push('/records');
   };
 
   const handleLogout = () => {
@@ -64,12 +71,18 @@ export default function Navigation() {
           <div className="flex items-center space-x-4">
             {isLoggedIn ? (
               <>
-                <span className="text-gray-300">Welcome, {username}</span>
+                <span className="text-gray-300">Welcome {isAdmin ? 'admin' : username}</span>
                 <button
                   onClick={handleDashboardClick}
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  {isAdmin ? 'Admin Dashboard' : 'Dashboard'}
+                  Dashboard
+                </button>
+                <button
+                  onClick={handleRecordsClick}
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Records
                 </button>
                 <button
                   onClick={handleLogout}
